@@ -6,33 +6,66 @@ import requests
 from datetime import datetime
 import time
 import os
+import mysql.connector
+import urllib.request
+
+config = {
+  'user': 'albert',
+  'password': '1234@',
+  'host': 'localhost',
+  'database': 'app',
+  'raise_on_warnings': True
+}
+
+codParking = 1
+
+
 
 # URL de la imagen de la cámara IP
-url = 'http://192.168.1.134:4747/cam/1/frame.jpg'
+url = 'http://192.168.1.255:4747/cam/1/frame.jpg'
 
 # Cargar el modelo YOLO
 model = YOLO('yolov8s.pt')
 
 # Definir las áreas de interés
 areas = [
-    [(152, 44), (294, 32), (389, 80), (289, 85)],
-    [(286, 88), (388, 90), (390, 109), (290, 111)],
-    [(290, 113), (394, 112), (393, 134), (285, 142)],
-    [(275, 137), (389, 140), (401, 177), (277, 196)],
-    [(285, 199), (397, 192), (404, 231), (285, 236)],
-    [(267, 250), (416, 245), (424, 313), (267, 318)],
-    [(270, 327), (426, 320), (430, 380), (272, 400)],
-    [(492, 48), (576, 39), (600, 66), (510, 82)],
-    [(520, 101), (634, 80), (663, 116), (542, 147)],
-    [(566, 139), (658, 119), (681, 161), (584, 180)],
-    [(588, 186), (674, 168), (709, 198), (609, 226)],
-    [(614, 226), (712, 196), (747, 244), (631, 273)],
-    [(632, 280), (767, 246), (794, 304), (653, 337)]
+    [(304, 17), (450, 42), (446, 86), (298, 49)],
+    [(294, 52), (442, 89), (442, 119), (287, 92)],
+    [(270, 94), (443, 112), (446, 166), (267, 144)],
+    [(270, 146), (443, 171), (440, 220), (258, 204)],
+    [(237, 208), (428, 227), (422, 300), (226, 285)],
+    [(211, 296), (452, 300), (458, 401), (191, 380)],
+    [(178, 377), (438, 411), (419, 499), (127, 489)],
+    [(588, 70), (696, 81), (704, 112), (598, 112)],
+    [(599, 117), (737, 112), (742, 140), (618, 152)],
+    [(612, 152), (757, 148), (773, 188), (663, 201)],
+    [(636, 212), (777, 196), (793, 236), (650, 248)],
+    [(655, 260), (850, 240), (870, 306), (689, 328)],
+    [(689, 328), (884, 308), (930, 374), (706, 391)],
+    [(697, 392), (912, 385), (943, 463), (728, 479)]
+    
 ]
 
 # Leer el archivo de clases COCO
 with open("coco.txt", "r") as my_file:
     class_list = my_file.read().split("\n")
+    
+
+
+# Función para conectarme a la base de datos y actualizar
+def update_database(free_spaces, codParking):
+    cnx = mysql.connector.connect(**config)
+    cursor = cnx.cursor()
+    
+    update_free_spaces = ("UPDATE parking "
+                          "SET disponibles_plazas = %s "
+                          "WHERE codParking = %s")
+    cursor.execute(update_free_spaces, (free_spaces, codParking))
+    
+    cnx.commit()
+
+    cursor.close()
+    cnx.close()
 
 # Función para capturar y procesar la imagen
 def capture_and_process_image():
@@ -95,6 +128,10 @@ def capture_and_process_image():
         output_filename = 'processed_' + filename
         cv2.imwrite(output_filename, frame)
 
+        
+        update_database(free_spaces,codParking)
+        
+        
         return output_filename
     else:
         print('No se pudo obtener la imagen. Código de estado:', response.status_code)

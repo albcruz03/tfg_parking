@@ -2,27 +2,177 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" >
     <title>Inicio</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        @font-face {
+            font-family: 'Bakso Sapi';
+            src: url(BaksoSapi.otf);
+        }
+
+        body {
+            background-color: #E6E8E6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .header p {
+            color: #3F403F;
+            font-family: 'Bakso Sapi', sans-serif;
+            font-size: 2.5rem;
+            margin-top: 1rem;
+        }
+
+        .header h3 {
+            color: 9FB8AD;
+            font-family: 'Bakso Sapi', sans-serif;
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .form-container {
+            margin-top: 2rem;
+        }
+
+        form {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #CED0CE;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px #ccc;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input[type="text"], input[type="password"], input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #CED0CE;
+            border-radius: 5px;
+            box-shadow: 0px 0px 2px #ccc;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #000000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .visible {
+            display: block;
+        }
+
+        .btn-toggle {
+            margin: 10px;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div class="header">
-        <p>Inicia sesión<br>o Regístrate</p>
+    <div class="container">
+        <div class="header">
+            <p>Encuentra tu<br>Parking<br>🚗</p>
+            <button class="btn btn-light btn-toggle" onclick="showLogin()">Iniciar Sesión</button>
+            <button class="btn btn-light btn-toggle" onclick="showRegister()">Registrarse</button>
+        </div>
+
+        <div id="login" class="form-container login visible">
+            <form id="loginForm" action="authenticate.php" method="post" onsubmit="return validateLogin()">
+                <label for="nombre_usuario">Nombre de Usuario:</label>
+                <input type="text" id="nombre_usuario" name="nombre_usuario" required>
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+                <div id="errorMessage" class="error-message hidden">Contraseña incorrecta. Por favor, inténtalo de nuevo.</div>
+                <input type="submit" value="Iniciar Sesión">
+            </form>    
+        </div>
+
+        <div id="register" class="form-container register hidden">
+            <form action="register.php" method="post">
+                <div id="registerErrorMessage" class="error-message hidden"></div>
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+                <label for="apellidos">Apellidos:</label>
+                <input type="text" id="apellidos" name="apellidos" required>
+                <label for="nombre_usuario">Nombre de Usuario:</label>
+                <input type="text" id="nombre_usuario" name="nombre_usuario" required>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" required>
+                <input type="submit" value="Registrar">
+            </form>
+        </div>
     </div>
 
-    <div class="login">
-            <form action="authenticate.php" method="post">
-				<label for="username">
-					<i class="fas fa-user"></i>
-				</label>
-				<input type="text" name="username" placeholder="Usuario" id="username" required>
-				<label for="password">
-					<i class="fas fa-lock"></i>
-				</label>
-				<input type="password" name="password" placeholder="Contraseña" id="password" required>
-				<input type="submit" value="Login">  
-    </div>
+    <script>
+        function showLogin() {
+            document.getElementById('login').classList.remove('hidden');
+            document.getElementById('login').classList.add('visible');
+            document.getElementById('register').classList.remove('visible');
+            document.getElementById('register').classList.add('hidden');
+        }
 
+        function showRegister() {
+            document.getElementById('register').classList.remove('hidden');
+            document.getElementById('register').classList.add('visible');
+            document.getElementById('login').classList.remove('visible');
+            document.getElementById('login').classList.add('hidden');
+        }
+
+        function validateLogin() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('error')) {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.classList.remove('hidden');
+                errorMessage.classList.add('visible');
+            }
+            return true;
+        }
+
+        function showRegisterErrors() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('errors')) {
+                const registerErrorMessage = document.getElementById('registerErrorMessage');
+                registerErrorMessage.innerText = urlParams.get('errors');
+                registerErrorMessage.classList.remove('hidden');
+                registerErrorMessage.classList.add('visible');
+                showRegister();
+            }
+        }
+
+        window.onload = function() {
+            validateLogin();
+            showRegisterErrors();
+        };
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

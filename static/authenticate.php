@@ -1,51 +1,40 @@
 <?php
 session_start();
-
-$DATABASE_HOST = 'localhost';
-$DATABASE_USER = 'albert';
-$DATABASE_PASS = '1234@';
-$DATABASE_NAME = 'app';
+include 'test/connection.php';
 
 
-$con = mysqli_connect($DATABASE_HOST, $DATABASE_USER, $DATABASE_PASS, $DATABASE_NAME);
-if (mysqli_connect_errno()) {
-    
-    exit('Failed to connect to MySQL: ' . mysqli_connect_error());
-}
-    
-if (!isset($_POST['username'], $_POST['password'])) {
-    exit('Please fill both the username and password fields!');
+if (!isset($_POST['nombre_usuario'], $_POST['password'])) {
+    header("Location: index.html");
+    exit();
 }
 
-if ($stmt = $con->prepare('SELECT id, password FROM accounts WHERE username = ?')) {
-    $stmt->bind_param('s', $_POST['username']);
+if ($stmt = $conn->prepare('SELECT codUsuario, hashed_password, rol FROM usuarios WHERE nombre_usuario = ?')) {
+    $stmt->bind_param('s', $_POST['nombre_usuario']);
     $stmt->execute();
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($id, $password);
+        $stmt->bind_result($codUsuario, $hashed_password, $rol);
         $stmt->fetch();
-      
-        if (password_verify($_POST['password'], $password)) {
+        if (password_verify($_POST['password'], $hashed_password)) {
             session_regenerate_id();
             $_SESSION['loggedin'] = TRUE;
-            $_SESSION['name'] = $_POST['username'];
-            $_SESSION['id'] = $id;
+            $_SESSION['name'] = $_POST['nombre_usuario'];
+            $_SESSION['codUsuario'] = $codUsuario;
+            $_SESSION['rol'] = $rol; 
             header("Location: welcome.php");
-            die();
+            exit();
         } else {
-
-            echo 'Incorrect username and/or password!';
+            header("Location: index.html?error=1");
+            exit();
         }
     } else {
-        // Incorrect username
-        echo 'Incorrect username and/or password!';
+        header("Location: index.html?error=1");
+        exit();
     }
 
-    // Close the statement
     $stmt->close();
 } else {
-    // Failed to prepare the SQL statement
-    echo 'Failed to prepare the SQL statement!';
+    echo 'Falló la conexión con la BBDD.';
 }
 ?>

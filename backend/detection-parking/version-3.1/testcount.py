@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 from ultralytics import YOLO
 import time
+import mysql.connector
+import sys
+
 
 model=YOLO('yolov8s.pt')
 
@@ -16,7 +19,7 @@ def RGB(event, x, y, flags, param):
 cv2.namedWindow('RGB')
 cv2.setMouseCallback('RGB', RGB)
 
-cap=cv2.VideoCapture('car2.mp4') #  car2.mp4 http://192.168.1.134:4747/video
+cap=cv2.VideoCapture('testcar.mp4') #  car2.mp4 http://192.168.1.134:4747/video
 
 my_file = open("coco.txt", "r")
 data = my_file.read()
@@ -283,8 +286,8 @@ while True:
     cv2.putText(frame,str(space),(23,30),cv2.FONT_HERSHEY_PLAIN,3,(255,255,255),2)
 
     cv2.imshow("RGB", frame)
-
-    if cv2.waitKey(0)&0xFF==27:
+    
+    if cv2.waitKey(0)&0xFF==27: 
         break
 cap.release()
 cv2.destroyAllWindows()
